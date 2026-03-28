@@ -1,7 +1,6 @@
 services:
   clock:
-    # Update image name to match your GitHub repository
-    image: ghcr.io/yourusername/clock:latest
+    image: ghcr.io/bferg314/clock:latest
     container_name: clock
     restart: unless-stopped
     ports:
