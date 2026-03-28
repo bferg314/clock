@@ -59,7 +59,9 @@ function _tick() {
   if (!_getTime || !_display) return;
   const { h, m, s } = _getTime();
   // Read hour12 dynamically so toggling it in settings takes effect immediately
-  _display.textContent = formatTime(h, m, s, Settings.get().digital.hour12);
+  const text = formatTime(h, m, s, Settings.get().digital.hour12);
+  // Wrap each digit in a fixed-width span so proportional fonts don't shift
+  _display.innerHTML = text.replace(/\d/g, d => `<span class="clock-digit">${d}</span>`);
 }
 
 export function stop() {

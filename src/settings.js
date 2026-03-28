@@ -1,6 +1,6 @@
 const KEY = 'clock-settings';
 
-const SIZES = { small: '200px', medium: '300px', large: '400px' };
+const SIZES = { small: '200px', medium: '300px', large: '400px', xl: '550px', fill: '100vmin' };
 
 const DEFAULTS = {
   mode: 'analog',

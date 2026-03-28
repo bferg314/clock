@@ -61,6 +61,12 @@ body {
   font-feature-settings: "tnum";
 }
 
+.clock-digit {
+  display: inline-block;
+  text-align: center;
+  width: 1ch;
+}
+
 .fade-out { opacity: 0 !important; }
 .hidden { display: none !important; }
 
