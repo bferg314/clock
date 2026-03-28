@@ -1,0 +1,10 @@
+services:
+  clock:
+    # Update image name to match your GitHub repository
+    image: ghcr.io/yourusername/clock:latest
+    container_name: clock
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"

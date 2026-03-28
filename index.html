@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clock</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+  <main id="clock-wrap">
+    <div id="analog-clock">
+      <svg id="analog-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div id="digital-clock" class="hidden">
+      <div id="digital-display"></div>
+    </div>
+  </main>
+
+  <button id="settings-toggle" title="Settings" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
+
+  <aside id="settings-panel">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button id="settings-close" aria-label="Close settings">✕</button>
+    </div>
+
+    <section>
+      <h3>Mode</h3>
+      <div class="btn-group" id="mode-btns">
+        <button data-mode="analog" class="toggle-btn">Analog</button>
+        <button data-mode="digital" class="toggle-btn">Digital</button>
+      </div>
+    </section>
+
+    <section>
+      <h3>Size</h3>
+      <div class="btn-group" id="size-btns">
+        <button data-size="small" class="size-btn">S</button>
+        <button data-size="medium" class="size-btn">M</button>
+        <button data-size="large" class="size-btn">L</button>
+      </div>
+    </section>
+
+    <section>
+      <h3>Timezone</h3>
+      <input id="tz-input" type="text" list="tz-list" placeholder="Auto (browser default)">
+      <datalist id="tz-list"></datalist>
+      <button id="tz-reset" class="text-btn">Reset to auto</button>
+    </section>
+
+    <section id="analog-section">
+      <h3>Analog — Style</h3>
+      <select id="analog-style-select">
+        <option value="-1">Cycle through all</option>
+        <option value="0">Classic</option>
+        <option value="1">Minimal</option>
+        <option value="2">Retro</option>
+        <option value="3">Skeleton</option>
+      </select>
+      <div id="analog-cycle-options">
+        <label><input type="radio" name="analog-cycle" value="random-on-load"> Random on load</label>
+        <label><input type="radio" name="analog-cycle" value="timer"> Cycle on timer</label>
+        <div class="interval-row" id="analog-interval-row">
+          <label>Every <input id="analog-interval" type="number" min="10" max="3600" value="300"> sec</label>
+        </div>
+      </div>
+    </section>
+
+    <section id="digital-section">
+      <h3>Digital — Font</h3>
+      <select id="digital-font-select">
+        <option value="-1">Cycle through all</option>
+      </select>
+      <div id="digital-cycle-options">
+        <label><input type="radio" name="digital-cycle" value="random-on-load"> Random on load</label>
+        <label><input type="radio" name="digital-cycle" value="timer"> Cycle on timer</label>
+        <div class="interval-row" id="digital-interval-row">
+          <label>Every <input id="digital-interval" type="number" min="10" max="3600" value="300"> sec</label>
+        </div>
+      </div>
+      <label class="checkbox-label">
+        <input type="checkbox" id="hour12-check"> 12-hour format
+      </label>
+    </section>
+  </aside>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

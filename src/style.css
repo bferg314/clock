@@ -1,0 +1,267 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --clock-size: 300px;
+  --bg: #0d0d0d;
+  --panel-bg: #161616;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --accent: #4a9eff;
+  --border: #2a2a2a;
+  --btn-hover: #222;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ---- Clock area ---- */
+#clock-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#analog-clock,
+#digital-clock {
+  width: var(--clock-size);
+  height: var(--clock-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#analog-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#digital-display {
+  font-size: calc(var(--clock-size) * 0.175);
+  color: var(--text);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  transition: opacity 0.35s;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.fade-out { opacity: 0 !important; }
+.hidden { display: none !important; }
+
+/* ---- Settings toggle button ---- */
+#settings-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  z-index: 200;
+}
+#settings-toggle:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--btn-hover);
+}
+#settings-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---- Settings panel ---- */
+#settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 272px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 150;
+}
+#settings-panel.open {
+  transform: translateX(0);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.6);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 18px 13px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--panel-bg);
+  z-index: 1;
+}
+.settings-header h2 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+#settings-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+#settings-close:hover {
+  color: var(--text);
+  background: var(--btn-hover);
+}
+
+#settings-panel section {
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border);
+}
+#settings-panel h3 {
+  font-size: 0.67rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+/* ---- Button groups ---- */
+.btn-group {
+  display: flex;
+  gap: 6px;
+}
+.toggle-btn,
+.size-btn {
+  flex: 1;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.toggle-btn:hover,
+.size-btn:hover {
+  background: var(--btn-hover);
+  border-color: #3a3a3a;
+}
+.toggle-btn.active,
+.size-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ---- Form controls ---- */
+select,
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  margin-bottom: 6px;
+}
+select:focus,
+input[type="text"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  margin-bottom: 7px;
+  cursor: pointer;
+  color: var(--text);
+}
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.interval-row {
+  padding-left: 22px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  display: none;
+}
+.interval-row.visible { display: block; }
+.interval-row input[type="number"] {
+  width: 68px;
+  display: inline;
+  margin: 0 4px;
+  padding: 4px 8px;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 2px 0;
+  text-decoration: underline;
+  font-family: inherit;
+}
+.text-btn:hover { color: #7ab8ff; }
+
+.checkbox-label {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* ---- Mode-based section visibility ---- */
+body.mode-analog #digital-section { display: none; }
+body.mode-digital #analog-section { display: none; }
+
+/* ---- Hide cycle options when style is pinned ---- */
+#analog-cycle-options,
+#digital-cycle-options {
+  margin-top: 8px;
+}
