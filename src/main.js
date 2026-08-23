@@ -3,6 +3,7 @@ import * as Settings from './settings.js';
 import * as Clock from './clock.js';
 import { getAllTimezones } from './timezone.js';
 import { FONT_NAMES } from './digital/fonts.js';
+import { STYLE_NAMES } from './analog/index.js';
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 const settings = Settings.load();
@@ -98,7 +99,12 @@ document.getElementById('tz-reset').addEventListener('click', () => {
 const analogStyleSel = document.getElementById('analog-style-select');
 const analogCycleOpts = document.getElementById('analog-cycle-options');
 
-// Options 0–3 are declared in HTML; just restore the saved value
+STYLE_NAMES.forEach((name, i) => {
+  const opt = document.createElement('option');
+  opt.value = String(i);
+  opt.textContent = name;
+  analogStyleSel.appendChild(opt);
+});
 analogStyleSel.value = String(settings.analog.pinnedStyle);
 analogCycleOpts.style.display = settings.analog.pinnedStyle === -1 ? '' : 'none';
 
