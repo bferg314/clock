@@ -4,7 +4,7 @@ const SIZES = { small: '200px', medium: '300px', large: '400px', xl: '550px', fi
 
 const DEFAULTS = {
   mode: 'analog',
-  size: 'medium',
+  size: 'fill',
   timezone: 'auto',
   analog: {
     cycleMode: 'random-on-load', // 'random-on-load' | 'timer'
@@ -69,7 +69,7 @@ export function subscribe(fn) {
 }
 
 export function applySize(size) {
-  document.documentElement.style.setProperty('--clock-size', SIZES[size] ?? SIZES.medium);
+  document.documentElement.style.setProperty('--clock-size', SIZES[size] ?? SIZES.fill);
 }
 
 export { SIZES };
