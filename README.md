@@ -57,7 +57,7 @@ Analog and digital cycle independently.
 
 ## Development
 
-**Requirements:** Node.js 20+
+**Requirements:** Node.js 20.19+ or 22.12+ (Vite 8 requirement; the Docker image builds on Node 24)
 
 ```bash
 npm install
@@ -91,4 +91,4 @@ docker compose up -d
 | Server | nginx:stable-alpine | ~25 MB final image, zero Node.js at runtime |
 | Container | Docker + Compose | Single-service, label-based Watchtower opt-in |
 | Registry | ghcr.io | Free for public repos, integrated with `GITHUB_TOKEN` |
-| CI | GitHub Actions | Builds `linux/amd64` + `linux/arm64` on tag push |
+| CI | GitHub Actions | Builds `linux/amd64` + `linux/arm64` on tag push; the Vite build runs once natively, not once per architecture |
