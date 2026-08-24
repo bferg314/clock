@@ -9,16 +9,34 @@ This document covers the Dockerfile, Docker Compose setup, GitHub Actions pipeli
 The build uses two stages so that Node.js is never present in the final image.
 
 ```
-Stage 1 (builder)   node:20-alpine
+Stage 1 (builder)   node:24-alpine   (pinned to $BUILDPLATFORM)
   npm ci → vite build → dist/
 
-Stage 2 (server)    nginx:stable-alpine
+Stage 2 (server)    nginx:stable-alpine   (per target platform)
   Copy dist/ → /usr/share/nginx/html
   Copy nginx/default.conf
   Expose port 80
+  HEALTHCHECK against http://127.0.0.1/
 ```
 
 **Final image size:** ~25 MB.
+
+### Why the builder is pinned to `$BUILDPLATFORM`
+
+`FROM --platform=$BUILDPLATFORM node:24-alpine` forces the Node/Vite stage to run
+natively on the runner's own architecture instead of once per target platform.
+
+Without it, buildx runs `npm ci` and `vite build` for `linux/arm64` under QEMU
+emulation. That is drastically slower and has previously caused the publish job
+to hit the 6-hour GitHub Actions execution limit and be cancelled.
+
+The build output is plain static HTML/CSS/JS/fonts — there is nothing
+architecture-specific about it — so building it once and copying the same `dist/`
+into both the amd64 and arm64 images is correct as well as much faster. Stage 2
+only runs `COPY` instructions, so no emulation is needed there either.
+
+**Keep stage 2 free of `RUN` instructions.** Adding one reintroduces QEMU
+emulation for the arm64 image.
 
 ### nginx caching strategy
 
@@ -80,8 +98,9 @@ The workflow runs on **either** of these events:
 |-------|---------------|
 | Tag push matching `v*` | `git tag v1.0.0 && git push --tags` |
 | GitHub Release published | Create a release in the GitHub UI or via `gh release create` |
+| Manual dispatch | Actions → *Build and Push to GHCR* → **Run workflow** |
 
-Both methods produce the same result. Using tags directly is faster for automated pipelines; using the GitHub UI is easier to attach release notes to.
+Tag pushes and releases produce the same result. Using tags directly is faster for automated pipelines; using the GitHub UI is easier to attach release notes to.
 
 ### Tags produced
 
@@ -89,9 +108,14 @@ Both methods produce the same result. Using tags directly is faster for automate
 
 | Tag | Example | When |
 |-----|---------|------|
-| Full semver | `1.2.3` | Always |
-| Major.minor | `1.2` | Always |
-| `latest` | `latest` | When the trigger is on the default branch |
+| Full semver | `1.2.3` | Tag push / release |
+| Major.minor | `1.2` | Tag push / release |
+| `latest` | `latest` | Tag push / release, when the version is not a pre-release |
+| Branch name | `main` | Manual dispatch |
+| Short SHA | `sha-a1b2c3d` | Manual dispatch |
+
+A manual dispatch deliberately produces **only** branch and SHA tags, so a
+smoke-test build can never overwrite `latest` on a running deployment.
 
 ### Authentication
 
@@ -100,6 +124,10 @@ The workflow uses `GITHUB_TOKEN` — no additional secrets or credentials are re
 ### Build cache
 
 The workflow uses GitHub Actions cache (`cache-from: type=gha`) to speed up repeated builds. The Node dependency layer is typically restored from cache on subsequent pushes, making builds significantly faster after the first run.
+
+The job also sets `timeout-minutes: 30`. A healthy build finishes in a couple of
+minutes, so this fails fast rather than consuming the full 6-hour job allowance
+if something wedges.
 
 ---
 
