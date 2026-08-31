@@ -5,10 +5,12 @@ import * as retro from './retro.js';
 import * as skeleton from './skeleton.js';
 import * as neon from './neon.js';
 import * as nautical from './nautical.js';
+import * as deco from './deco.js';
+import * as chalkboard from './chalkboard.js';
 import * as Settings from '../settings.js';
 
-const STYLES = [classic, minimal, retro, skeleton, neon, nautical];
-export const STYLE_NAMES = ['Classic', 'Minimal', 'Retro', 'Skeleton', 'Neon', 'Nautical'];
+const STYLES = [classic, minimal, retro, skeleton, neon, nautical, deco, chalkboard];
+export const STYLE_NAMES = ['Classic', 'Minimal', 'Retro', 'Skeleton', 'Neon', 'Nautical', 'Deco', 'Chalkboard'];
 
 let _svg = null;
 let _getTime = null;
