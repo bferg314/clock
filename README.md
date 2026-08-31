@@ -7,7 +7,7 @@ A minimal, self-hosted web clock with analog and digital modes. No frameworks, n
 ## Features
 
 ### Modes
-- **Analog** — six distinct SVG clock faces
+- **Analog** — eight distinct SVG clock faces
 - **Digital** — fourteen bundled fonts, no CDN required
 
 ### Analog styles
@@ -20,6 +20,8 @@ A minimal, self-hosted web clock with analog and digital modes. No frameworks, n
 | Skeleton | Transparent face, outline hands, gear motif at center |
 | Neon | Dark face, glowing cyan/magenta tubing, no numerals |
 | Nautical | Dive watch — navy dial, count-up bezel, lume pips, sword hands |
+| Deco | Art Deco glamour — black dial, gold sunburst rays, blade hands |
+| Chalkboard | Wood-framed slate dial, hand-drawn chalk numerals and hands |
 
 ### Digital fonts (all bundled, offline-capable)
 
