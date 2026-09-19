@@ -7,10 +7,12 @@ import * as neon from './neon.js';
 import * as nautical from './nautical.js';
 import * as deco from './deco.js';
 import * as chalkboard from './chalkboard.js';
+import * as blueprint from './blueprint.js';
+import * as mondrian from './mondrian.js';
 import * as Settings from '../settings.js';
 
-const STYLES = [classic, minimal, retro, skeleton, neon, nautical, deco, chalkboard];
-export const STYLE_NAMES = ['Classic', 'Minimal', 'Retro', 'Skeleton', 'Neon', 'Nautical', 'Deco', 'Chalkboard'];
+const STYLES = [classic, minimal, retro, skeleton, neon, nautical, deco, chalkboard, blueprint, mondrian];
+export const STYLE_NAMES = ['Classic', 'Minimal', 'Retro', 'Skeleton', 'Neon', 'Nautical', 'Deco', 'Chalkboard', 'Blueprint', 'Mondrian'];
 
 let _svg = null;
 let _getTime = null;

@@ -7,7 +7,7 @@ A minimal, self-hosted web clock with analog and digital modes. No frameworks, n
 ## Features
 
 ### Modes
-- **Analog** — eight distinct SVG clock faces
+- **Analog** — ten distinct SVG clock faces
 - **Digital** — fourteen bundled fonts, no CDN required
 
 ### Analog styles
@@ -22,6 +22,8 @@ A minimal, self-hosted web clock with analog and digital modes. No frameworks, n
 | Nautical | Dive watch — navy dial, count-up bezel, lume pips, sword hands |
 | Deco | Art Deco glamour — black dial, gold sunburst rays, blade hands |
 | Chalkboard | Wood-framed slate dial, hand-drawn chalk numerals and hands |
+| Blueprint | Deep-blue drafting paper, cyan graph grid, monospace numerals, open outline hands |
+| Mondrian | De Stijl white dial, thick black grid, primary-color blocks, bar hands |
 
 ### Digital fonts (all bundled, offline-capable)
 
