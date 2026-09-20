@@ -38,6 +38,7 @@ src/timezone.js   Intl-based time source and formatting. All displayed time orig
 src/analog/       index.js (style registry, rAF loop, cycling), helpers.js (shared SVG utils), one file per face.
 src/digital/      index.js (tick + font cycling), fonts.js (@fontsource imports + font registry).
 src/style.css     All styling. Analog faces style themselves inline in SVG; CSS covers layout and the panel.
+test/             Vitest suites (jsdom). See Testing.
 nginx/, Dockerfile, docker-compose.yml, DOCKER.md   Deployment only.
 dist/             Generated build output. Gitignored. Never hand-edit or commit.
 ```
@@ -45,20 +46,25 @@ dist/             Generated build output. Gitignored. Never hand-edit or commit.
 ## Commands
 
 ```bash
-npm ci            # install from lockfile
-npm run dev       # dev server with HMR at http://localhost:5173
-npm run build     # production build -> dist/ (about 1-2s)
-npm run preview   # serve the built dist/ at http://localhost:4173
+npm ci                          # install from lockfile
+npm run dev                     # dev server with HMR at http://localhost:5173
+npm run build                   # production build -> dist/ (about 1s)
+npm run preview                 # serve the built dist/ at http://localhost:4173
+npm test                        # headless test suite, jsdom (about 1s warm)
+npm run test:watch              # same suite in watch mode
+npx vitest run test/faces.test.js               # one file
+npx vitest run -t 'rotates each hand'           # one test by name
 ```
 
-There is **no lint, format, type-check, or test tooling in this repository.** Do not invent commands for
-them, and do not add such tooling as a side effect of an unrelated task.
+There is **no lint, format, or type-check tooling in this repository.** Do not invent commands for them,
+and do not add such tooling as a side effect of an unrelated task.
 
-`npm run build` is the only automated check available. Run it for any change that touches `src/` or
-`index.html`, then verify behavior in a browser via `npm run dev`.
+`npm test` and `npm run build` are the two automated checks. Run both for any change touching `src/` or
+`index.html`. They are fast enough that there is no reason to skip them.
 
-CI (`.github/workflows/publish.yml`) only builds and pushes the Docker image on version-tag pushes,
-releases, and manual dispatch. **Nothing runs on pull requests**, so local verification is the only gate.
+CI runs on every pull request via `.github/workflows/ci.yml` (install, test, build).
+`.github/workflows/publish.yml` is separate and builds/pushes the Docker image only on version-tag
+pushes, releases, and manual dispatch.
 
 ## Architecture rules
 
@@ -110,8 +116,10 @@ every other module operates on elements handed to it (the one exception is `appl
 Vite bundles the WOFF2 files. Never add a CDN link, Google Fonts URL, analytics, or any other runtime
 network request.
 
-**Dependencies.** Do not add npm dependencies. The stack is deliberately framework-free and library-free;
-if a task appears to need a library, solve it with platform APIs or report the constraint.
+**Dependencies.** Do not add runtime dependencies. The shipped bundle is deliberately framework-free and
+library-free — the only `dependencies` are the bundled fonts. If a task appears to need a library, solve it
+with platform APIs or report the constraint. New `devDependencies` need a clear reason and should not
+reach the browser bundle.
 
 ## Development principles
 
@@ -137,22 +145,34 @@ Do not, unless the task explicitly asks:
 
 ## Testing
 
-There is no test framework. Verify changes by running the app and exercising the affected paths:
+Vitest with the jsdom environment. Tests live in `test/*.test.js` and import from `src/` directly; there
+are no fixtures and nothing is mocked beyond `vi.useFakeTimers()` for time assertions.
+
+- `test/faces.test.js` — registry invariants plus the init/update contract, run against **every** face
+  module discovered on disk via `import.meta.glob`. A new face is picked up automatically; one that is
+  never registered in `src/analog/index.js` fails the count assertion.
+- `test/time.test.js` — hand angles and time formatting, against a frozen clock.
+- `test/smoke.test.js` — boots the real `index.html` body with the real `src/main.js` and asserts both
+  modes render, the hands advance across animation frames, and settings persist.
+
+What requires a test:
+
+- A new analog face needs no new test file — add it to the registry and the shared contract suite covers it.
+- A change to time handling, formatting, settings shape, or the registry order must come with assertions.
+- A bug fix should add the case that was broken.
+
+The "locked order" assertions in `test/faces.test.js` exist to enforce the append-only registry rule. If one
+fails, the fix is almost always to move your new entry to the end of the array — not to edit the expected list.
+
+The suite covers structure and behavior, not appearance. Still open the app for anything visual:
 
 ```bash
 npm run dev
 ```
 
-For a UI or rendering change, confirm in the browser:
-
-- both modes render (Analog / Digital toggle) and the second hand or seconds digit advances smoothly;
-- a new or edited face renders at every size, including **Fill**, and the hands point at the correct time;
-- settings survive a reload (they are persisted to `localStorage`);
-- pinning a specific style or font still selects the intended one after adding a registry entry;
-- switching mode, style, font, size, or timezone leaves no stray timer running (time must not speed up or
-  double-tick after several switches).
-
-Clear the `clock-settings` localStorage entry when testing first-run defaults.
+Confirm a new or edited face renders at every size, including **Fill**, and that switching mode, style,
+font, size, or timezone leaves no stray timer running (time must not speed up or double-tick after several
+switches). Clear the `clock-settings` localStorage entry when checking first-run defaults.
 
 ## Security and configuration
 
@@ -182,8 +202,9 @@ Scale to the change:
 
 - Documentation-only: content is accurate and consistent with the code it describes.
 - Any change to `src/` or `index.html`:
+  - [ ] `npm test` passes, with assertions added for new or fixed behavior.
   - [ ] `npm run build` succeeds.
-  - [ ] Behavior verified in the browser via `npm run dev`, including the checks under **Testing**.
+  - [ ] Anything visual checked in the browser via `npm run dev` — the suite does not cover appearance.
   - [ ] `git diff` reviewed; only intended files changed and no debug logging left behind.
   - [ ] `README.md` / `DOCKER.md` updated if the change is user- or deploy-visible.
   - [ ] Anything you could not verify is stated explicitly, along with remaining assumptions and risks.

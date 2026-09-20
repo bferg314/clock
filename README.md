@@ -52,7 +52,7 @@ A minimal, self-hosted web clock with analog and digital modes. No frameworks, n
 Analog and digital cycle independently.
 
 ### Other settings
-- **Size** — Small (200 px), Medium (300 px), Large (400 px)
+- **Size** — S (200 px), M (300 px), L (400 px), XL (550 px), Fill (`100vmin`, the default)
 - **Timezone** — auto-detected from the browser; override with any IANA timezone (type to filter ~600 options)
 - **12 / 24-hour format** — digital mode toggle
 - All settings are persisted to `localStorage`
@@ -61,14 +61,17 @@ Analog and digital cycle independently.
 
 ## Development
 
-**Requirements:** Node.js 20.19+ or 22.12+ (Vite 8 requirement; the Docker image builds on Node 24)
+**Requirements:** Node.js 20.19+ or 22.12+ (Vite 8 requirement). `.nvmrc` pins Node 24, which is what CI and the Docker image build on.
 
 ```bash
 npm install
 npm run dev       # dev server at http://localhost:5173
 npm run build     # production build → dist/
 npm run preview   # preview the production build locally
+npm test          # headless test suite (Vitest + jsdom)
 ```
+
+Every pull request runs the test suite and a production build via [GitHub Actions](.github/workflows/ci.yml).
 
 ---
 
