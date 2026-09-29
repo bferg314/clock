@@ -133,6 +133,15 @@ if something wedges.
 
 ## Triggering a release build
 
+### Step 0 — Bump `package.json` first
+
+The image tags are derived from the git tag, but `version` in `package.json` is maintained by hand. The
+publish workflow fails fast if the two disagree, so land the bump on `main` before tagging:
+
+```bash
+npm version 1.4.0 --no-git-tag-version   # updates package.json + package-lock.json
+```
+
 ### Option 1 — Tag push (recommended for scripted releases)
 
 ```bash

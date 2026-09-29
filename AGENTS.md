@@ -195,6 +195,9 @@ switches). Clear the `clock-settings` localStorage entry when checking first-run
 - Add a body explaining *why* for anything beyond a trivial change; wrap at roughly 72 characters.
 - Work on a feature branch and merge into `main` via pull request.
 - Releases are cut by pushing a `v*` tag, which triggers the image publish. Do not tag unless asked.
+- `version` in `package.json` must equal the tag being cut. Land the bump on `main` first
+  (`npm version <x.y.z> --no-git-tag-version`); the publish workflow fails if tag and manifest disagree.
+- `main` is protected: changes land through a pull request and the `build` check must pass.
 
 ## Definition of done
 
