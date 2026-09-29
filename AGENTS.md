@@ -2,6 +2,9 @@
 
 Operations manual for coding agents working in this repository.
 
+> **Keep this file at 200 lines or fewer.** When adding a rule, consolidate or remove another. Keep only
+> what an agent cannot learn quickly from the code itself.
+
 ## Repository overview
 
 Self-hosted web clock: a single static page with an analog (SVG) mode and a digital (web-font) mode.
@@ -9,34 +12,14 @@ Vanilla JavaScript ES modules bundled by Vite; **no framework and no runtime dep
 npm `dependencies` are `@fontsource/*` packages, which are bundled into the build so the app works fully
 offline. The production artifact is static files served by nginx from a Docker image.
 
-Four things drive almost every change:
-
-- `index.html` — the whole DOM, including every settings control. There is no templating.
-- `src/main.js` — binds those DOM ids to settings and the clock; the bootstrap and only event-wiring layer.
-- `src/analog/` — one module per clock face plus an orchestrator that owns style selection and the rAF loop.
-- `src/digital/` — font list plus a renderer that owns the 1-second tick.
-
-## Setup
-
-Node `^20.19.0 || >=22.12.0` (enforced by `engines` in `package.json`; Vite 8 requires it). No database,
-no local services, no environment variables.
-
-```bash
-npm ci
-```
-
-Use `npm ci` rather than `npm install` so the lockfile stays authoritative.
-
-## Repository structure
-
 ```
 index.html        Full DOM: clock containers + settings panel. Element ids are the contract with main.js.
-src/main.js       Bootstrap, DOM event wiring, settings-panel behavior.
+src/main.js       Bootstrap, DOM event wiring, settings-panel behavior. The only event-wiring layer.
 src/clock.js      Orchestrator: owns resolved timezone, mode switching, restart of the two renderers.
 src/settings.js   Single source of truth for persisted state (localStorage) + size tokens.
 src/timezone.js   Intl-based time source and formatting. All displayed time originates here.
 src/analog/       index.js (style registry, rAF loop, cycling), helpers.js (shared SVG utils), one file per face.
-src/digital/      index.js (tick + font cycling), fonts.js (@fontsource imports + font registry).
+src/digital/      index.js (1-second tick + font cycling), fonts.js (@fontsource imports + font registry).
 src/style.css     All styling. Analog faces style themselves inline in SVG; CSS covers layout and the panel.
 test/             Vitest suites (jsdom). See Testing.
 nginx/, Dockerfile, docker-compose.yml, DOCKER.md   Deployment only.
@@ -45,26 +28,25 @@ dist/             Generated build output. Gitignored. Never hand-edit or commit.
 
 ## Commands
 
+Node `^20.19.0 || >=22.12.0` (enforced by `engines`; Vite 8 requires it). No database, services, or env vars.
+
 ```bash
-npm ci                          # install from lockfile
+npm ci                          # install from lockfile (not `npm install`)
 npm run dev                     # dev server with HMR at http://localhost:5173
 npm run build                   # production build -> dist/ (about 1s)
 npm run preview                 # serve the built dist/ at http://localhost:4173
 npm test                        # headless test suite, jsdom (about 1s warm)
-npm run test:watch              # same suite in watch mode
 npx vitest run test/faces.test.js               # one file
 npx vitest run -t 'rotates each hand'           # one test by name
 ```
 
-There is **no lint, format, or type-check tooling in this repository.** Do not invent commands for them,
-and do not add such tooling as a side effect of an unrelated task.
+There is **no lint, format, or type-check tooling.** Do not invent commands for it or add it as a side
+effect of an unrelated task. `npm test` and `npm run build` are the two automated checks; run both for any
+change touching `src/` or `index.html`.
 
-`npm test` and `npm run build` are the two automated checks. Run both for any change touching `src/` or
-`index.html`. They are fast enough that there is no reason to skip them.
-
-CI runs on every pull request via `.github/workflows/ci.yml` (install, test, build).
-`.github/workflows/publish.yml` is separate and builds/pushes the Docker image only on version-tag
-pushes, releases, and manual dispatch.
+CI (`.github/workflows/ci.yml`) runs install, test, and build on every pull request.
+`.github/workflows/publish.yml` builds and pushes the Docker image only on `v*` tag pushes, releases, and
+manual dispatch.
 
 ## Architecture rules
 
@@ -116,88 +98,83 @@ every other module operates on elements handed to it (the one exception is `appl
 Vite bundles the WOFF2 files. Never add a CDN link, Google Fonts URL, analytics, or any other runtime
 network request.
 
-**Dependencies.** Do not add runtime dependencies. The shipped bundle is deliberately framework-free and
-library-free — the only `dependencies` are the bundled fonts. If a task appears to need a library, solve it
-with platform APIs or report the constraint. New `devDependencies` need a clear reason and should not
-reach the browser bundle.
-
-## Development principles
-
-- Read the existing implementation before changing it; the faces and renderers follow tight conventions.
-- Mirror the nearest existing example. A new face should read like `src/analog/minimal.js`.
-- Prefer the smallest change that fully solves the task.
-- Reuse the existing helpers, settings module, and time source before writing new ones.
-- Preserve existing behavior, module exports, settings keys, and DOM ids unless the task requires changing them.
-- Never weaken validation or security controls (timezone validation, nginx headers) to make something pass.
-- Never claim a command or build succeeded unless it actually ran and succeeded.
+**Dependencies.** Do not add runtime dependencies. If a task appears to need a library, solve it with
+platform APIs or report the constraint. New `devDependencies` need a clear reason and must not reach the
+browser bundle.
 
 ## Change discipline
 
-Do not, unless the task explicitly asks:
-
-- reformat, restyle, or "clean up" code you were not asked to change;
-- reorder or renumber the style/font registries;
-- rename exports, settings keys, DOM ids, or CSS class names;
-- upgrade dependencies or regenerate `package-lock.json`;
-- introduce abstractions for a single caller;
-- hand-edit anything under `dist/`;
-- silence an error, delete a check, or add a broad `try/catch` instead of fixing the cause.
+- Read the existing implementation first and mirror the nearest example (a new face should read like
+  `src/analog/minimal.js`). Reuse existing helpers, the settings module, and the time source.
+- Prefer the smallest change that fully solves the task. Preserve behavior, exports, settings keys, DOM ids,
+  and CSS class names unless the task requires changing them.
+- Unless asked, do not reformat unrelated code, upgrade dependencies, regenerate `package-lock.json`,
+  add single-caller abstractions, or hand-edit `dist/`.
+- Never silence an error, delete a check, add a broad `try/catch`, or weaken validation or security
+  controls (timezone validation, nginx headers) to make something pass.
+- Never claim a command or build succeeded unless it actually ran and succeeded.
 
 ## Testing
 
-Vitest with the jsdom environment. Tests live in `test/*.test.js` and import from `src/` directly; there
-are no fixtures and nothing is mocked beyond `vi.useFakeTimers()` for time assertions.
+Vitest with jsdom. Tests in `test/*.test.js` import from `src/` directly; nothing is mocked beyond
+`vi.useFakeTimers()`.
 
 - `test/faces.test.js` — registry invariants plus the init/update contract, run against **every** face
-  module discovered on disk via `import.meta.glob`. A new face is picked up automatically; one that is
-  never registered in `src/analog/index.js` fails the count assertion.
+  module on disk via `import.meta.glob`. A new face needs no new test, but one left unregistered fails.
 - `test/time.test.js` — hand angles and time formatting, against a frozen clock.
-- `test/smoke.test.js` — boots the real `index.html` body with the real `src/main.js` and asserts both
-  modes render, the hands advance across animation frames, and settings persist.
+- `test/smoke.test.js` — boots the real `index.html` + `src/main.js`; asserts both modes render, hands
+  advance across frames, and settings persist.
 
-What requires a test:
+Changes to time handling, formatting, settings shape, or registry order need assertions; a bug fix adds
+the case that was broken. If a "locked order" assertion fails, move your new entry to the end of the
+array — do not edit the expected list.
 
-- A new analog face needs no new test file — add it to the registry and the shared contract suite covers it.
-- A change to time handling, formatting, settings shape, or the registry order must come with assertions.
-- A bug fix should add the case that was broken.
-
-The "locked order" assertions in `test/faces.test.js` exist to enforce the append-only registry rule. If one
-fails, the fix is almost always to move your new entry to the end of the array — not to edit the expected list.
-
-The suite covers structure and behavior, not appearance. Still open the app for anything visual:
-
-```bash
-npm run dev
-```
-
-Confirm a new or edited face renders at every size, including **Fill**, and that switching mode, style,
-font, size, or timezone leaves no stray timer running (time must not speed up or double-tick after several
-switches). Clear the `clock-settings` localStorage entry when checking first-run defaults.
+The suite does not cover appearance. For anything visual, run `npm run dev` and confirm the face renders
+at every size including **Fill**, and that switching mode, style, font, size, or timezone leaves no stray
+timer (time must not speed up or double-tick). Clear the `clock-settings` localStorage entry to check
+first-run defaults.
 
 ## Security and configuration
 
-- No secrets, tokens, or credentials belong in this repository. It has none today; do not add any.
-- The app is fully client-side — there is no backend, no auth, and no user data beyond `localStorage`.
-- Publishing uses the workflow's built-in `GITHUB_TOKEN`. Do not add secrets to the workflow.
-- Do not weaken the response headers or caching rules in `nginx/default.conf`; the `no-cache` rule on
-  `index.html` is what lets deployed containers pick up updates.
+- No secrets, tokens, or credentials belong in this repository. Publishing uses the built-in
+  `GITHUB_TOKEN`; do not add secrets to workflows.
+- The app is fully client-side: no backend, no auth, no user data beyond `localStorage`.
+- Do not weaken the headers or caching rules in `nginx/default.conf`; the `no-cache` rule on `index.html`
+  is what lets deployed containers pick up updates.
 
 ## Documentation
 
-- Adding or removing an analog face or a digital font requires updating the corresponding table in
-  `README.md`, including the count in the Features section.
-- Changing settings, sizes, or default behavior requires updating the relevant `README.md` section.
-- Changing the Dockerfile, nginx config, compose file, or publish workflow requires updating `DOCKER.md`.
+- Adding or removing a face or font: update its `README.md` table and the count in Features.
+- Changing settings, sizes, or default behavior: update the relevant `README.md` section.
+- Changing the Dockerfile, nginx config, compose file, or publish workflow: update `DOCKER.md`.
 
-## Commits and pull requests
+## Git workflow
 
-- Imperative, capitalized subject line with no trailing period (e.g. `Add Blueprint and Mondrian analog faces`).
-- Add a body explaining *why* for anything beyond a trivial change; wrap at roughly 72 characters.
-- Work on a feature branch and merge into `main` via pull request.
-- Releases are cut by pushing a `v*` tag, which triggers the image publish. Do not tag unless asked.
-- `version` in `package.json` must equal the tag being cut. Land the bump on `main` first
-  (`npm version <x.y.z> --no-git-tag-version`); the publish workflow fails if tag and manifest disagree.
-- `main` is protected: changes land through a pull request and the `build` check must pass.
+- **Ask before anything that leaves the machine**: commit, push, PR, merge, tag, or branch deletion.
+  Permission for one of these does not cover the next.
+- **Never commit to or force-push `main`.** Branch from a fresh `origin/main` (`git fetch origin &&
+  git switch -c <kebab-case-name> origin/main`), one topic per branch. GitHub does not enforce this; you must.
+- Do not stash, reset, or discard uncommitted work you did not make. Look before any `reset --hard`,
+  `clean`, or `branch -D`.
+- **Commits:** imperative, capitalized subject with no trailing period, about 72 characters max
+  (e.g. `Add Blueprint and Mondrian analog faces`). For anything non-trivial, add a body explaining *why*,
+  wrapped at about 72 characters. Stage files by name and review `git diff --staged`; no `--no-verify`, and
+  no `--amend` after pushing.
+- **Updating a pushed branch:** merge `origin/main` into it, or rebase and push with `--force-with-lease`
+  (never a bare `--force`).
+- **Merging:** only once the `build` check is green (`gh pr view <n> --json mergeStateStatus,statusCheckRollup`).
+  Use a merge commit (`gh pr merge <n> --merge`), not squash or rebase. Then delete the branch locally
+  (`git branch -d`) and on the remote.
+- **Checking whether a branch landed:** run `git fetch origin` first, then `git log origin/main..<branch>`.
+  Empty output means it is merged.
+
+**Releases.** Pushing a `v*` tag publishes the image to GHCR as `X.Y.Z`, `X.Y`, and `latest`. Tag only
+when asked.
+
+1. Land a version-bump PR (`npm version <x.y.z> --no-git-tag-version`); publish fails if tag ≠ `package.json`.
+2. Check the tag is new (`git ls-remote --tags origin v<x.y.z>`), then on an up-to-date `main`:
+   `git tag -a v<x.y.z> -m "v<x.y.z> - <summary>" && git push origin v<x.y.z>` (never `--tags`).
+3. **A pushed tag is permanent.** Never move or delete one. If a release is wrong, cut the next patch.
 
 ## Definition of done
 
