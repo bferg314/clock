@@ -76,3 +76,27 @@ describe('app boot', () => {
     expect(saved.mode).toBe('digital') // from the previous click
   })
 })
+
+describe('mode switching', async () => {
+  const Analog = await import('../src/analog/index.js')
+  const handTransforms = () =>
+    [...document.querySelectorAll('#analog-svg g[transform^="rotate"]')].map(h => h.getAttribute('transform'))
+
+  it('stops animating the analog face while digital is showing', async () => {
+    expect(document.body.classList.contains('mode-digital')).toBe(true)
+    const before = handTransforms()
+    await frames(3)
+    expect(handTransforms()).toEqual(before)
+  })
+
+  it('resumes the same face when switched back to analog', async () => {
+    const style = Analog.getCurrentStyleIndex()
+    document.querySelector('#mode-btns [data-mode="analog"]').click()
+    expect(Analog.getCurrentStyleIndex()).toBe(style)
+
+    await frames(1)
+    const before = handTransforms()
+    await frames(3)
+    expect(handTransforms()).not.toEqual(before)
+  })
+})

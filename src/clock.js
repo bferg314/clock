@@ -9,6 +9,7 @@ let _digitalDisplay = null;
 let _analogWrap = null;
 let _digitalWrap = null;
 let _resolvedTz = detectTimezone();
+let _mode = 'analog';
 
 export function init({ analogSvg, digitalDisplay, analogWrap, digitalWrap, settings }) {
   _analogSvg = analogSvg;
@@ -18,14 +19,19 @@ export function init({ analogSvg, digitalDisplay, analogWrap, digitalWrap, setti
 
   _resolvedTz = settings.timezone === 'auto' ? detectTimezone() : settings.timezone;
 
-  _applyMode(settings.mode);
-
-  Analog.init(_analogSvg, _getTime, settings);
-  Digital.init(_digitalDisplay, _getTime, settings);
+  _mode = settings.mode;
+  _applyMode(_mode);
+  _start(_mode, settings);
 }
 
+// Only the visible renderer runs; the hidden one is stopped so it does not
+// keep animating behind the scenes.
 export function setMode(mode) {
+  if (mode === _mode) return;
+  _stop(_mode);
+  _mode = mode;
   _applyMode(mode);
+  _start(mode, Settings.get());
 }
 
 export function setTimezone(tz) {
@@ -34,12 +40,22 @@ export function setTimezone(tz) {
 
 export function restartAnalog() {
   Analog.stop();
-  Analog.init(_analogSvg, _getTime, Settings.get());
+  if (_mode === 'analog') Analog.init(_analogSvg, _getTime, Settings.get());
 }
 
 export function restartDigital() {
   Digital.stop();
-  Digital.init(_digitalDisplay, _getTime, Settings.get());
+  if (_mode === 'digital') Digital.init(_digitalDisplay, _getTime, Settings.get());
+}
+
+function _start(mode, settings) {
+  if (mode === 'analog') Analog.init(_analogSvg, _getTime, settings);
+  else Digital.init(_digitalDisplay, _getTime, settings);
+}
+
+function _stop(mode) {
+  if (mode === 'analog') Analog.stop();
+  else Digital.stop();
 }
 
 function _getTime() {

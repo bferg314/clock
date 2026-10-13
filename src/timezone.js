@@ -21,19 +21,32 @@ export function getTimeParts(tz) {
   const now = new Date();
   const ms = now.getMilliseconds();
 
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: false,
-  }).formatToParts(now);
+  const parts = formatterFor(tz).formatToParts(now);
 
   const get = type => parseInt(parts.find(p => p.type === type)?.value ?? '0', 10);
   let h = get('hour');
   if (h === 24) h = 0; // some Intl impls return 24 for midnight
 
   return { h, m: get('minute'), s: get('second'), ms };
+}
+
+// Building a DateTimeFormat is expensive and getTimeParts runs every animation
+// frame, so keep one formatter per zone.
+const _formatters = new Map();
+
+function formatterFor(tz) {
+  let fmt = _formatters.get(tz);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+    });
+    _formatters.set(tz, fmt);
+  }
+  return fmt;
 }
 
 export function formatTime(h, m, s, hour12 = false) {
