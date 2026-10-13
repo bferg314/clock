@@ -12,6 +12,15 @@ export function getAllTimezones() {
   }
 }
 
+export function isValidTimezone(tz) {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Returns current time parts for a given IANA timezone.
  * @param {string} tz - IANA timezone string, e.g. 'America/Chicago'

@@ -57,6 +57,27 @@ Analog and digital cycle independently.
 - **12 / 24-hour format** — digital mode toggle
 - All settings are persisted to `localStorage`
 
+### Wall display / kiosk
+- The settings button and mouse cursor hide after 3 seconds without input and come back when the pointer moves
+- Press **F** or double-click the clock to toggle fullscreen; **Esc** closes the settings panel
+
+### URL parameters
+Settings can be set in the page URL, which is handy for a wall display or for running several screens with
+different setups from one deployment. URL values apply to that page only and are never saved; changing a
+setting in the panel replaces the URL value for that setting. Unrecognized values are ignored.
+
+| Parameter | Values | Example |
+|-----------|--------|---------|
+| `mode` | `analog`, `digital` | `?mode=digital` |
+| `style` | an analog style name, or `cycle` | `?style=nautical` |
+| `font` | a digital font name, or `cycle` | `?font=share-tech-mono` |
+| `size` | `small`, `medium`, `large`, `xl`, `fill` | `?size=xl` |
+| `tz` | an IANA timezone, or `auto` | `?tz=Europe/London` |
+| `hour12` | `1` / `0` (also `true` / `false`) | `?hour12=1` |
+
+Style and font names ignore case, spaces and dashes. Combine parameters with `&`:
+`http://clock.local/?mode=digital&font=vt323&tz=Asia/Tokyo`.
+
 ---
 
 ## Development

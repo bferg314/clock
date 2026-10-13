@@ -18,6 +18,7 @@ src/main.js       Bootstrap, DOM event wiring, settings-panel behavior. The only
 src/clock.js      Orchestrator: owns resolved timezone, mode switching, restart of the two renderers.
 src/settings.js   Single source of truth for persisted state (localStorage) + size tokens.
 src/timezone.js   Intl-based time source and formatting. All displayed time originates here.
+src/url.js        Parses ?mode=&style=&font=... into unsaved overrides (Settings.applyOverrides).
 src/analog/       index.js (style registry, rAF loop, cycling), helpers.js (shared SVG utils), one file per face.
 src/digital/      index.js (1-second tick + font cycling), fonts.js (@fontsource imports + font registry).
 src/style.css     All styling. Analog faces style themselves inline in SVG; CSS covers layout and the panel.
