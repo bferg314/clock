@@ -1,7 +1,7 @@
 import './style.css';
 import * as Settings from './settings.js';
 import * as Clock from './clock.js';
-import { getAllTimezones } from './timezone.js';
+import { getAllTimezones, isValidTimezone } from './timezone.js';
 import { FONT_NAMES } from './digital/fonts.js';
 import { STYLE_NAMES } from './analog/index.js';
 import { parseUrlSettings } from './url.js';
@@ -115,11 +115,10 @@ tzInput.addEventListener('change', () => {
     Clock.setTimezone('auto');
     return;
   }
-  try {
-    new Intl.DateTimeFormat('en-US', { timeZone: val }); // validates the zone
+  if (isValidTimezone(val)) {
     Settings.save({ timezone: val });
     Clock.setTimezone(val);
-  } catch {
+  } else {
     // Revert to the zone in effect now, not the one from page load.
     const current = Settings.get().timezone;
     tzInput.value = current !== 'auto' ? current : '';
