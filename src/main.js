@@ -85,7 +85,9 @@ tzInput.addEventListener('change', () => {
     Settings.save({ timezone: val });
     Clock.setTimezone(val);
   } catch {
-    tzInput.value = settings.timezone !== 'auto' ? settings.timezone : '';
+    // Revert to the zone in effect now, not the one from page load.
+    const current = Settings.get().timezone;
+    tzInput.value = current !== 'auto' ? current : '';
   }
 });
 

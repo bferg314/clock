@@ -68,6 +68,21 @@ describe('app boot', () => {
     for (const d of digits) expect(d.textContent).toMatch(/^\d$/)
   })
 
+  it('reverts an invalid timezone to the last valid one', () => {
+    const tzInput = document.getElementById('tz-input')
+    const enter = value => {
+      tzInput.value = value
+      tzInput.dispatchEvent(new Event('change'))
+    }
+
+    enter('Europe/London')
+    enter('Not/AZone')
+    expect(tzInput.value).toBe('Europe/London')
+    expect(JSON.parse(localStorage.getItem('clock-settings')).timezone).toBe('Europe/London')
+
+    enter('') // back to auto for the tests that follow
+  })
+
   it('persists a settings change to localStorage', () => {
     document.querySelector('#size-btns [data-size="small"]').click()
 
