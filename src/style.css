@@ -85,7 +85,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, opacity 0.4s;
   z-index: 200;
 }
 #settings-toggle:hover {
@@ -96,6 +96,13 @@ body {
 #settings-toggle svg {
   width: 18px;
   height: 18px;
+}
+
+/* ---- Idle (kiosk): hide the gear and cursor until the pointer moves ---- */
+body.idle { cursor: none; }
+body.idle #settings-toggle {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ---- Settings panel ---- */

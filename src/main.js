@@ -4,9 +4,15 @@ import * as Clock from './clock.js';
 import { getAllTimezones } from './timezone.js';
 import { FONT_NAMES } from './digital/fonts.js';
 import { STYLE_NAMES } from './analog/index.js';
+import { parseUrlSettings } from './url.js';
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
-const settings = Settings.load();
+Settings.load();
+const settings = Settings.applyOverrides(parseUrlSettings(location.search, {
+  styleNames: STYLE_NAMES,
+  fontNames: FONT_NAMES,
+  sizes: Object.keys(Settings.SIZES),
+}));
 Settings.applySize(settings.size);
 document.body.classList.add(`mode-${settings.mode}`);
 
@@ -30,6 +36,35 @@ document.addEventListener('click', (e) => {
     panel.classList.remove('open');
   }
 });
+
+// ── Kiosk: hide the gear and cursor when idle, fullscreen on F / double-click ─
+const IDLE_MS = 3000;
+let idleTimer = null;
+
+function wake() {
+  document.body.classList.remove('idle');
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    if (!panel.classList.contains('open')) document.body.classList.add('idle');
+  }, IDLE_MS);
+}
+['pointermove', 'pointerdown', 'keydown'].forEach(type => document.addEventListener(type, wake));
+wake();
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen?.();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    panel.classList.remove('open');
+    return;
+  }
+  if (e.target.closest('input, select, textarea')) return;
+  if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) toggleFullscreen();
+});
+document.getElementById('clock-wrap').addEventListener('dblclick', toggleFullscreen);
 
 // ── Mode buttons ──────────────────────────────────────────────────────────────
 const modeBtns = document.getElementById('mode-btns');

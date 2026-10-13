@@ -21,24 +21,29 @@ const DEFAULTS = {
   },
 };
 
+// _stored is what lives in localStorage. _overrides come from the page URL and
+// apply to this page view only. _current is the two merged, and is what the
+// rest of the app reads.
+let _stored = structuredClone(DEFAULTS);
+let _overrides = {};
 let _current = structuredClone(DEFAULTS);
 const _subs = [];
 
 export function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const stored = JSON.parse(raw);
-      _current = {
-        ...DEFAULTS,
-        ...stored,
-        analog: { ...DEFAULTS.analog, ...stored.analog },
-        digital: { ...DEFAULTS.digital, ...stored.digital },
-      };
-    }
+    _stored = raw ? merge(DEFAULTS, JSON.parse(raw)) : structuredClone(DEFAULTS);
   } catch {
-    _current = structuredClone(DEFAULTS);
+    _stored = structuredClone(DEFAULTS);
   }
+  _current = merge(_stored, _overrides);
+  return _current;
+}
+
+/** Applies settings that take effect without being saved (e.g. from the URL). */
+export function applyOverrides(overrides) {
+  _overrides = overrides;
+  _current = merge(_stored, _overrides);
   return _current;
 }
 
@@ -47,15 +52,12 @@ export function get() {
 }
 
 export function save(patch) {
-  if (patch.analog) {
-    patch = { ...patch, analog: { ..._current.analog, ...patch.analog } };
-  }
-  if (patch.digital) {
-    patch = { ...patch, digital: { ..._current.digital, ...patch.digital } };
-  }
-  _current = { ..._current, ...patch };
+  // A value the user sets explicitly replaces any override for that key.
+  _overrides = without(_overrides, patch);
+  _stored = merge(_stored, patch);
+  _current = merge(_stored, _overrides);
   try {
-    localStorage.setItem(KEY, JSON.stringify(_current));
+    localStorage.setItem(KEY, JSON.stringify(_stored));
   } catch {}
   _subs.forEach(fn => fn(_current));
 }
@@ -73,3 +75,25 @@ export function applySize(size) {
 }
 
 export { SIZES };
+
+function merge(base, patch) {
+  return {
+    ...base,
+    ...patch,
+    analog: { ...base.analog, ...patch.analog },
+    digital: { ...base.digital, ...patch.digital },
+  };
+}
+
+function without(overrides, patch) {
+  const out = { ...overrides };
+  for (const key of Object.keys(patch)) {
+    if ((key === 'analog' || key === 'digital') && out[key]) {
+      out[key] = { ...out[key] };
+      for (const sub of Object.keys(patch[key])) delete out[key][sub];
+    } else {
+      delete out[key];
+    }
+  }
+  return out;
+}
