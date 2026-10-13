@@ -20,6 +20,9 @@ let _styleIndex = 0;
 let _handRefs = null;
 let _rafId = null;
 let _cycleTimer = null;
+// Picked once per page load, so restarting the renderer (e.g. on a mode
+// switch) shows the same style rather than rolling a new one.
+let _randomIndex = null;
 
 export function init(svg, getTime, settings) {
   _svg = svg;
@@ -30,7 +33,8 @@ export function init(svg, getTime, settings) {
   if (pinnedStyle !== -1) {
     _styleIndex = clamp(pinnedStyle, 0, STYLES.length - 1);
   } else if (cycleMode === 'random-on-load') {
-    _styleIndex = Math.floor(Math.random() * STYLES.length);
+    _randomIndex ??= Math.floor(Math.random() * STYLES.length);
+    _styleIndex = _randomIndex;
   } else {
     // timer mode — resume from persisted index
     _styleIndex = currentStyle % STYLES.length;

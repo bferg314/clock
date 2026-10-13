@@ -8,6 +8,9 @@ let _getTime = null;
 let _fontIndex = 0;
 let _tickTimer = null;
 let _cycleTimer = null;
+// Picked once per page load, so restarting the renderer (e.g. on a mode
+// switch) shows the same font rather than rolling a new one.
+let _randomIndex = null;
 
 export function init(display, getTime, settings) {
   _display = display;
@@ -18,7 +21,8 @@ export function init(display, getTime, settings) {
   if (pinnedFont !== -1) {
     _fontIndex = clamp(pinnedFont, 0, FONTS.length - 1);
   } else if (cycleMode === 'random-on-load') {
-    _fontIndex = Math.floor(Math.random() * FONTS.length);
+    _randomIndex ??= Math.floor(Math.random() * FONTS.length);
+    _fontIndex = _randomIndex;
   } else {
     _fontIndex = currentFont % FONTS.length;
   }
@@ -50,9 +54,20 @@ function _applyFontFade(index) {
 }
 
 function _startTick() {
-  if (_tickTimer) clearInterval(_tickTimer);
+  if (_tickTimer) clearTimeout(_tickTimer);
   _tick();
-  _tickTimer = setInterval(_tick, 1000);
+  _scheduleTick();
+}
+
+// A fixed 1s interval keeps whatever phase the page loaded at, so the digits
+// could change up to a second late. Instead, wake just after each whole second.
+// Date.now() is only used for scheduling here; the displayed time still comes
+// from _getTime().
+function _scheduleTick() {
+  _tickTimer = setTimeout(() => {
+    _tick();
+    _scheduleTick();
+  }, 1000 - (Date.now() % 1000) + 10);
 }
 
 function _tick() {
@@ -65,7 +80,7 @@ function _tick() {
 }
 
 export function stop() {
-  if (_tickTimer) { clearInterval(_tickTimer); _tickTimer = null; }
+  if (_tickTimer) { clearTimeout(_tickTimer); _tickTimer = null; }
   if (_cycleTimer) { clearInterval(_cycleTimer); _cycleTimer = null; }
 }
 
