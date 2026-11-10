@@ -91,7 +91,9 @@ sizeBtns.addEventListener('click', (e) => {
   sizeBtns.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('active', b === btn));
   Settings.applySize(size);
   Settings.save({ size });
+  Clock.fitDigital();
 });
+window.addEventListener('resize', Clock.fitDigital);
 sizeBtns.querySelectorAll('.size-btn').forEach(b => {
   b.classList.toggle('active', b.dataset.size === settings.size);
 });

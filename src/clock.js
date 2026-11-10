@@ -48,6 +48,11 @@ export function restartDigital() {
   if (_mode === 'digital') Digital.init(_digitalDisplay, _getTime, Settings.get());
 }
 
+// Re-fit the digital text after the clock size or window width changes.
+export function fitDigital() {
+  if (_mode === 'digital') Digital.fit();
+}
+
 function _start(mode, settings) {
   if (mode === 'analog') Analog.init(_analogSvg, _getTime, settings);
   else Digital.init(_digitalDisplay, _getTime, settings);

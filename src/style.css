@@ -50,7 +50,7 @@ body {
 }
 
 #digital-display {
-  font-size: calc(var(--clock-size) * 0.175);
+  font-size: calc(var(--clock-size) * 0.175 * var(--digital-fit, 1));
   color: var(--text);
   white-space: nowrap;
   text-align: center;
