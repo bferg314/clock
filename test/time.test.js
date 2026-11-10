@@ -99,3 +99,33 @@ describe('digital tick', () => {
     expect(display.textContent).toBe('12:34:05')
   })
 })
+
+// jsdom has no layout, so the widths are stubbed: 400px screen, and text that
+// is 600px wide at the base size and scales with --digital-fit.
+describe('digital fit', () => {
+  let display
+
+  beforeEach(() => {
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(400)
+    display = document.createElement('div')
+    Object.defineProperty(display, 'scrollWidth', {
+      get: () => 600 * Number(display.style.getPropertyValue('--digital-fit') || 1),
+    })
+    document.body.appendChild(display)
+  })
+  afterEach(() => {
+    Digital.stop()
+    display.remove()
+    vi.restoreAllMocks()
+  })
+
+  it('shrinks text that is wider than the screen and leaves narrow text alone', () => {
+    Digital.init(display, () => getTimeParts('UTC'), Settings.get())
+    expect(Number(display.style.getPropertyValue('--digital-fit'))).toBeCloseTo(400 * 0.94 / 600, 3)
+    expect(display.scrollWidth).toBeLessThanOrEqual(400)
+
+    vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1200)
+    Digital.fit()
+    expect(display.style.getPropertyValue('--digital-fit')).toBe('1')
+  })
+})
